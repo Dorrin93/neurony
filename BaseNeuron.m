@@ -6,7 +6,6 @@ classdef BaseNeuron
         weights;
         activation_function_parameters;
         bias;
-        response;
     end
     
     methods
@@ -19,8 +18,8 @@ classdef BaseNeuron
         end
         %% default activation function, it exsist solely for the sake of be
         %  overloaded ;_;
-        function obj = activation_function(obj,x)
-            obj.response = x;
+        function response = activation_function(obj,x)
+            response = x;
         end
         
         function response = calculate_output(obj,X)
