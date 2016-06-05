@@ -77,8 +77,8 @@ for t= 1:MaxGeneration
         end;
     end;
     [v idx] = min(errors);
-    v
-    g = weights(idx,:)
+    
+    g = weights(idx,:);
 end;
 
 idx = 0;
