@@ -1,8 +1,8 @@
 clc;
 clear;
 
-
-net=createNet(1,1,[8],[3,1]);
+%% Tworzenie sieci jednokierunkowej
+net=createNet(1,1,[4],[2,1]);
 
 
 %%przygotowanie danych
@@ -17,9 +17,12 @@ end
 %% 
 %  train_LM( net,Xu,Yu,max_error,max_epochs )
 % Xu, Yu - dane uczac
-% max_error,max_epochs - warunki zakoñczenia nauki
+% max_error,max_epochs,max_mu - warunki zakoñczenia nauki
 
-net=train_LM(net,Xu,T,0.00001,1000);
+%train_LM(net,Xu,T,0.0001,1000,1);
+
+%% train_BMAM( net,Xu,Yu,max_error,mu )
+net=train_BMAM(net,Xu,T,0.0001,1);
 
     
 %%Test i rysowanie wynikow

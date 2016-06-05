@@ -55,26 +55,25 @@ classdef FFNeuron < BaseNeuron
             obj.AND = op{1};
             obj.OR  = op{2};
             JKeq    = @(J,Q) obj.AND(obj.OR(J,Q),obj.AND(obj.OR(J,Q),obj.OR(Q,obj.NOT(Q))));
-            Deq     = @(J,Q) obj.AND(obj.OR(J,J),obj.AND(obj.OR(J,Q),obj.OR(J,obj.NOT(Q)))); 
+            Deq     = @(J,Q) obj.AND(obj.OR(J,J),obj.AND(obj.OR(J,Q),obj.OR(J,obj.NOT(Q))));
             ChoiDeq = @(J,Q) obj.AND(J,obj.AND(obj.OR(J,Q),obj.OR(obj.NOT(Q),J)));
             types = containers.Map({'JK','D','ChoiD'},{JKeq,Deq,ChoiDeq});
             obj.fundamentalEQ = types(type);
         end;
         
-         function response = activation_function(obj,X)
-             r=[];
-             for x=X
+        function obj = activation_function(obj,X)
+            r=[];
+            for x=X
                 v = obj.fundamentalEQ(x,obj.Q);
                 if obj.constQ == false
                     obj.Q = v;
                 end;
                 r=[r v];
-             end;
-             
+            end;
+            
             obj.response=r;
-            response=obj;
-         end
-         
+        end
+        
     end
     
 end

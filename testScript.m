@@ -2,7 +2,7 @@ clc;
 clear;
 max_epoch=500;
 mu=100;
-net=createNet(1,1,[4,4],[2,2,1]);
+net=FeedForwardNetwork(4, 'Fuzzy', 'Lin');
 % Xu=[1;2;3;4];
 % T=[1;3;5;7];
 old_err=999999;
@@ -18,7 +18,8 @@ m=1;
 for i=1:1000
     X_t(i)=(a/1000)*(i-1);
 end
-net=train_LM(net,Xu,T,0.00001,1000);
+net = configure(net, Xu, T);
+net=train_LM(net,Xu,T,0.00001,1000, 100);
 N=[];
     
     d=[];
