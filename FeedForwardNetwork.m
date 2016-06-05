@@ -111,6 +111,10 @@ classdef FeedForwardNetwork
             end
         end
         
+        function response = sim(obj,X)
+            response = calculate_output(obj, X); 
+        end
+        
         function net = train_LM( net,Xu,Yu,max_error,max_epochs,max_mu )
             %Function for training network with Levenberg-Marquardt Backpropagation
             %Algorithm
@@ -387,7 +391,6 @@ classdef FeedForwardNetwork
 
 
         function neuron = getNeuron(obj, layerIndex, FFoptionIndex)
-            display(obj.transferfcns{layerIndex});
             switch obj.transferfcns{layerIndex}
                 case 'Empty'
                     neuron = EmptyNeuron;
