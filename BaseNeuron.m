@@ -1,4 +1,4 @@
-classdef BaseNeuron
+classdef BaseNeuron < handle
     %   BaseNeuron - base class for other neurons
     %   It includes only input weights, c
     
@@ -11,6 +11,7 @@ classdef BaseNeuron
     methods
         function obj = BaseNeuron()
             % EMPTY and should stay that way
+            obj@handle();
             obj.bias=1;
         end
         function obj=set.weights(obj,input_weights)
