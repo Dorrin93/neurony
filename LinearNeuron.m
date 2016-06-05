@@ -5,8 +5,8 @@ classdef LinearNeuron < BaseNeuron
     end
     
     methods
-        function obj = activation_function(obj,x)
-            obj.response=obj.activation_function_parameters(1)*x+obj.activation_function_parameters(2);
+        function response = activation_function(obj,x)
+            response=obj.activation_function_parameters(1)*x+obj.activation_function_parameters(2);
         end
     end
     
