@@ -115,6 +115,10 @@ classdef FeedForwardNetwork
             net_response = mapminmax('reverse', response', obj.ts)';
         end
         
+        function response = sim(obj,X)
+            response = calculate_output(obj, X); 
+        end
+        
         function net = train_LM( net,Xu,Yu,max_error,max_epochs,max_mu )
             %Function for training network with Levenberg-Marquardt Backpropagation
             %Algorithm
