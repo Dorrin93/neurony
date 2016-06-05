@@ -6,9 +6,10 @@ classdef SigmoidalNeuron < BaseNeuron
     end
     
     methods
-         function obj = activation_function(obj,x)
-            obj.response=tansig(x);
-       end
+         function response = activation_function(obj,x)
+            obj.response=(2/(1+exp(-2*x)))-1;
+            response=obj;
+        end
     end
     
 end

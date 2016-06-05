@@ -54,8 +54,8 @@ classdef FeedForwardNetwork
             is = size(X, 2);
             os = size(Y, 2);
             hs = size(obj.transferfcns,2)-1;
-            %[obj.pn, obj.ps] = mapminmax(X);
-            %[obj.tn, obj.ts] = mapminmax(Y);
+            [obj.pn, obj.ps] = mapminmax(X');
+            [obj.tn, obj.ts] = mapminmax(Y');
             
             obj.inputLayer=is;
             obj.hiddenLayer=cell(1,hs);
@@ -75,9 +75,9 @@ classdef FeedForwardNetwork
                 
                 if strcmp(obj.transferfcns{i},'Fuzzy')
                     fuzzyiter = fuzzyiter + 1;
-                end
-                
+                end          
             end
+            
             inputs=obj.hiddenLayerSize(end);
             
             for j=1:os
@@ -87,16 +87,19 @@ classdef FeedForwardNetwork
                     obj.outputLayer(j)=getNeuron(obj, hs+1, fuzzyiter);
                 end
                 obj.outputLayer(j).weights=rand()/10 * ones(1, inputs);
-                obj.outputLayer(j).activation_function_parameters=[1,0];
-                
+                obj.outputLayer(j).activation_function_parameters=[1,0];              
             end
+            
             obj.init = true;            
             
         end
         
         function net_response = calculate_output(obj,X)
+            %x = mapminmax('apply',X', obj.ps);
+            x = X;
+            
             %%HiddenLayers
-            input=X;
+            input=x';
             for i=1:size(obj.hiddenLayer,2)
                 hiddenLayerOutput=zeros(1,size(obj.hiddenLayer{i},2));
                 for j=1:size(obj.hiddenLayer{i},2)
@@ -105,10 +108,11 @@ classdef FeedForwardNetwork
                 input=hiddenLayerOutput;
             end
             %%OutputLayer
-            net_response=zeros(1,size(obj.outputLayer,2));
+            response=zeros(1,size(obj.outputLayer,2));
             for i=1:size(obj.outputLayer,2)
-                net_response(i)=obj.outputLayer(i).calculate_output(hiddenLayerOutput).response;
+                response(i)=obj.outputLayer(i).calculate_output(hiddenLayerOutput).response;
             end
+            net_response = mapminmax('reverse', response', obj.ts)';
         end
         
         function net = train_LM( net,Xu,Yu,max_error,max_epochs,max_mu )
@@ -120,17 +124,21 @@ classdef FeedForwardNetwork
             old_err=999999;
             m=1;
             
+            %x = mapminmax('apply',Xu', net.ps)';
+            %y = mapminmax('apply',Yu', net.ps)';
+            x = Xu;
+            y = Yu;
             
             for i=1:max_epochs
                 net2=net;
-                rp=randperm(size(Xu,1));
-                Xu=Xu(rp,:);
-                Yu=Yu(rp,:);
-                net2=LM_iteration(net2,Xu,Yu,mu);
+                rp=randperm(size(x,1));
+                x=x(rp,:);
+                y=y(rp,:);
+                net2=LM_iteration(net2,x,y,mu);
                 new_err=0;
                 %%blad
-                for it=1: size(Xu,1)
-                    new_err=new_err+(Yu(it,:)-net2.calculate_output(Xu(it,:)))^2;
+                for it=1: size(x,1)
+                    new_err=new_err+(y(it,:)-net2.calculate_output(x(it,:)))^2;
                 end
                 %%aktualizacja jesli blad sie zmniejszyl
                 if(old_err-new_err>0.000001)
@@ -157,12 +165,18 @@ classdef FeedForwardNetwork
         function net = train_BMAM( net,Xu,Yu,max_error,mu )
             %%Function for training network with BMAM
             old_err=0;
-            for it=1: size(Xu,1)
-                old_err=old_err+(Yu(it,:)-net.calculate_output(Xu(it,:)))^2;
+            
+            %x = mapminmax('apply',Xu', net.ps)';
+            %y = mapminmax('apply',Yu', net.ps)';
+            x = Xu;
+            y = Yu;
+            
+            for it=1: size(x,1)
+                old_err=old_err+(y(it,:)-net.calculate_output(x(it,:)))^2;
             end
-            rp=randperm(size(Xu,1));
-            Xu=Xu(rp,:);
-            Yu=Yu(rp,:);
+            rp=randperm(size(x,1));
+            x=x(rp,:);
+            y=y(rp,:);
             for i=1:size(net.hiddenLayer,2)
                 for j=1:size(net.hiddenLayer{i},2)
                     for weight=1:size(net.hiddenLayer{i}(j).weights,2)+1
@@ -180,11 +194,11 @@ classdef FeedForwardNetwork
                                 end
                             end
                             for iter=1:3
-                                net_copies(copy)=LM_iteration(net_copies(copy),Xu,Yu,mu);
+                                net_copies(copy)=LM_iteration(net_copies(copy),x,y,mu);
                             end
                             new_err(copy)=0;
-                            for it=1: size(Xu,1)
-                                new_err(copy)=new_err(copy)+(Yu(it,:)-net_copies(copy).calculate_output(Xu(it,:)))^2;
+                            for it=1: size(x,1)
+                                new_err(copy)=new_err(copy)+(y(it,:)-net_copies(copy).calculate_output(x(it,:)))^2;
                             end
                         end
                         
@@ -222,11 +236,11 @@ classdef FeedForwardNetwork
                             end
                         end
                         for iter=1:3
-                            net_copies(copy)=LM_iteration(net_copies(copy),Xu,Yu,mu);
+                            net_copies(copy)=LM_iteration(net_copies(copy),x,y,mu);
                         end
                         new_err(copy)=0;
-                        for it=1: size(Xu,1)
-                            new_err(copy)=new_err(copy)+(Yu(it,:)-net_copies(copy).calculate_output(Xu(it,:)))^2;
+                        for it=1: size(x,1)
+                            new_err(copy)=new_err(copy)+(y(it,:)-net_copies(copy).calculate_output(x(it,:)))^2;
                         end
                     end
                     [min_err,min_err_index]=min(new_err);
@@ -387,7 +401,6 @@ classdef FeedForwardNetwork
 
 
         function neuron = getNeuron(obj, layerIndex, FFoptionIndex)
-            display(obj.transferfcns{layerIndex});
             switch obj.transferfcns{layerIndex}
                 case 'Empty'
                     neuron = EmptyNeuron;

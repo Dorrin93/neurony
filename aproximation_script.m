@@ -2,7 +2,7 @@ clc;
 clear;
 
 %% Tworzenie sieci jednokierunkowej
-net=createNet(1,1,[4],[2,1]);
+net=FeedForwardNetwork([5 5], 'Fuzzy', 'Fuzzy', 'Lin');
 
 
 %%przygotowanie danych
@@ -11,13 +11,13 @@ for i=1:50
     Xu(i,:)=(a/50)*(i-1);
     T(i,:)=y(Xu(i,:)); %
 end
-
+net = configure(net,Xu,T);
 
  
 %% 
 %  train_LM( net,Xu,Yu,max_error,max_epochs )
 % Xu, Yu - dane uczac
-% max_error,max_epochs,max_mu - warunki zakoñczenia nauki
+% max_error,max_epochs,max_mu - warunki zakoï¿½czenia nauki
 
 %train_LM(net,Xu,T,0.0001,1000,1);
 
