@@ -100,14 +100,14 @@ classdef FeedForwardNetwork
             for i=1:size(obj.hiddenLayer,2)
                 hiddenLayerOutput=zeros(1,size(obj.hiddenLayer{i},2));
                 for j=1:size(obj.hiddenLayer{i},2)
-                    hiddenLayerOutput(j)=obj.hiddenLayer{i}(j).calculate_output(input).response;
+                    hiddenLayerOutput(j)=obj.hiddenLayer{i}(j).calculate_output(input);
                 end
                 input=hiddenLayerOutput;
             end
             %%OutputLayer
             net_response=zeros(1,size(obj.outputLayer,2));
             for i=1:size(obj.outputLayer,2)
-                net_response(i)=obj.outputLayer(i).calculate_output(hiddenLayerOutput).response;
+                net_response(i)=obj.outputLayer(i).calculate_output(hiddenLayerOutput);
             end
         end
         
@@ -277,8 +277,8 @@ classdef FeedForwardNetwork
                 y{i}=[input 1];
                 for j=1:size(obj.hiddenLayer{i},2)
                     neti=obj.hiddenLayer{i}(j).calculate_net(input);
-                    s{i}(j)=(obj.hiddenLayer{i}(j).activation_function(neti+dx).response-obj.hiddenLayer{i}(j).activation_function(neti-dx).response)/(2*dx);
-                    hiddenLayerOutput(j)=obj.hiddenLayer{i}(j).calculate_output(input).response;
+                    s{i}(j)=(obj.hiddenLayer{i}(j).activation_function(neti+dx)-obj.hiddenLayer{i}(j).activation_function(neti-dx))/(2*dx);
+                    hiddenLayerOutput(j)=obj.hiddenLayer{i}(j).calculate_output(input);
                 end
                 input=hiddenLayerOutput;
             end
@@ -289,8 +289,8 @@ classdef FeedForwardNetwork
             delta{size(obj.hiddenLayer,2)+1}=zeros(size(obj.outputLayer,2),size(obj.outputLayer,2));
             for i=1:size(obj.outputLayer,2)
                 neti=obj.outputLayer(i).calculate_net(input);
-                s{size(obj.hiddenLayer,2)+1}(i)=(obj.outputLayer(i).activation_function(neti+dx).response-obj.outputLayer(i).activation_function(neti-dx).response)/(2*dx);
-                net_response(i)=obj.outputLayer(i).calculate_output(hiddenLayerOutput).response;
+                s{size(obj.hiddenLayer,2)+1}(i)=(obj.outputLayer(i).activation_function(neti+dx)-obj.outputLayer(i).activation_function(neti-dx))/(2*dx);
+                net_response(i)=obj.outputLayer(i).calculate_output(hiddenLayerOutput);
                 
                 delta{size(obj.hiddenLayer,2)+1}(i,i)=s{size(obj.hiddenLayer,2)+1}(i);
             end

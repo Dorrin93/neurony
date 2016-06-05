@@ -1,4 +1,4 @@
-classdef BaseNeuron
+classdef BaseNeuron < handle
     %   BaseNeuron - base class for other neurons
     %   It includes only input weights, c
     
@@ -6,12 +6,12 @@ classdef BaseNeuron
         weights;
         activation_function_parameters;
         bias;
-        response;
     end
     
     methods
         function obj = BaseNeuron()
             % EMPTY and should stay that way
+            obj@handle();
             obj.bias=1;
         end
         function obj=set.weights(obj,input_weights)
@@ -19,8 +19,8 @@ classdef BaseNeuron
         end
         %% default activation function, it exsist solely for the sake of be
         %  overloaded ;_;
-        function obj = activation_function(obj,x)
-            obj.response = x;
+        function response = activation_function(obj,x)
+            response = x;
         end
         
         function response = calculate_output(obj,X)
