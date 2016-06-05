@@ -6,12 +6,12 @@ classdef EmptyNeuron < BaseNeuron
     end
     
     methods
-        function obj = activation_function(obj,x)
-            obj.response=x;
+        function response = activation_function(obj,x)
+            response=x;
         end
-        function obj = calculate_output(obj,X)
+        function response = calculate_output(obj,X)
             %% calculate neuron response for input vector X
-            obj.response = sum(X*obj.weights')+obj.bias;
+            response = sum(X*obj.weights')+obj.bias;
         end
     end
     
