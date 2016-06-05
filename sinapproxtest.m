@@ -32,7 +32,7 @@ T_u = T_u';
 
 N_neu = [];
 E_neu = [];
-for i=7:15
+for i=15:17
     display(i);
     net = FeedForwardNetwork(i, 'Tansig', 'Lin');
     net = configure(net, X_u, T_u);
