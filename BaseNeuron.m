@@ -30,6 +30,13 @@ classdef BaseNeuron < handle
         function response = calculate_net(obj,X)
             response = sum(X.*obj.weights)+obj.bias;
         end
+        
+        function cp = copy(obj)
+            cp = feval(class(obj));
+            cp.weights = obj.weights;
+            cp.activation_function_parameters = obj.activation_function_parameters;
+            cp.bias = obj.bias;
+        end
     end
     
 end

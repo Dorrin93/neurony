@@ -34,9 +34,9 @@ N_neu = [];
 E_neu = [];
 for i=2:17
     display(i);
-    net = FeedForwardNetwork(i, 'Tansig', 'Lin');
+    net = FeedForwardNetwork( i, 'Fuzzy', 'Lin');
     net = configure(net, X_u, T_u);
-    net = train_LM(net, X_u, T_u, 1e-5, 1000, 1e9);
+    net = train_LM(net, X_u, T_u, 1e-5, 500, 1e9);
     error = 0;
     T_n = zeros(1,n);
     for j = 1:1001

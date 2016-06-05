@@ -11,6 +11,11 @@ classdef FFNeuron < BaseNeuron
         constQ;
     end
     
+    properties(Access = private)
+        type;
+        norm;
+    end
+    
     methods
         %%
         % -<REQ>type - Typ flip-flopa [ 'JK','D','ChoiD']
@@ -25,6 +30,9 @@ classdef FFNeuron < BaseNeuron
             if nargin < 3;
                 p = 2;
             end;
+            
+            obj.type = type;
+            obj.norm = norm;
             
             if nargin < 4;
                 obj.Q = rand();
@@ -62,11 +70,26 @@ classdef FFNeuron < BaseNeuron
         end;
         
         function response = activation_function(obj,X)
-
+            
             response = obj.fundamentalEQ(X,obj.Q);
             if obj.constQ == false
                 obj.Q = response;
             end;
+        end
+        
+        function cp = copy(obj)
+            cp = feval(class(obj), obj.type, obj.norm);
+            cp.type = obj.type;
+            cp.norm = obj.norm;
+            cp.weights = obj.weights;
+            cp.activation_function_parameters = obj.activation_function_parameters;
+            cp.bias = obj.bias;
+            cp.NOT = obj.NOT;
+            cp.AND = obj.AND;
+            cp.OR = obj.OR;
+            cp.Q = obj.Q;
+            cp.fundamentalEQ = obj.fundamentalEQ;
+            cp.constQ = obj.constQ;
         end
         
     end

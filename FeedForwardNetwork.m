@@ -1,4 +1,4 @@
-classdef FeedForwardNetwork
+classdef FeedForwardNetwork < matlab.mixin.Copyable
     %FeedForwardNetwork
   
     properties
@@ -13,8 +13,8 @@ classdef FeedForwardNetwork
     
     properties(Access = private)
         init;
-        pn; ps;
-        tn; ts;
+        %pn; ps;
+        %tn; ts;
         hiddenLayerSize;
     end
     
@@ -126,7 +126,8 @@ classdef FeedForwardNetwork
             
             
             for i=1:max_epochs
-                net2=net;
+                net2=copyElement(net);
+                %net2=net;
                 rp=randperm(size(Xu,1));
                 Xu=Xu(rp,:);
                 Yu=Yu(rp,:);
@@ -138,7 +139,8 @@ classdef FeedForwardNetwork
                 end
                 %%aktualizacja jesli blad sie zmniejszyl
                 if(old_err-new_err>0.000001)
-                    net=net2;
+                    net=copyElement(net2);
+                    %net=net2;
                     old_err=new_err;
                     mu=mu/10;
                     m=1;
@@ -174,7 +176,7 @@ classdef FeedForwardNetwork
                         new_err=[];
                         lowest_err=0;
                         for copy=1:6 %% tutaj zrownoleglenie
-                            net_copies(copy)=net;
+                            net_copies(copy)=copyElement(net);
                             if copy<6 %% numer 6 pozostaje bez zmian
                                 
                                 if(weight==size(net.hiddenLayer{i}(j).weights,2)+1)
@@ -217,7 +219,7 @@ classdef FeedForwardNetwork
             for j=1:size(net.outputLayer,2)
                 for weight=1:size(net.outputLayer(j).weights,2)+1
                     for copy=1:6 %% tu tez zrownolglic mozna
-                        net_copies(copy)=net;
+                        net_copies(copy)=copy(net);
                         if copy<6 %%numer szesc bez zmian
                             if(weight==size(net.outputLayer(j).weights,2)+1)
                                 net_copies(copy).outputLayer(j).bias=net_copies(copy).outputLayer(j).bias+(.5-rand());
@@ -393,11 +395,11 @@ classdef FeedForwardNetwork
         function neuron = getNeuron(obj, layerIndex, FFoptionIndex)
             switch obj.transferfcns{layerIndex}
                 case 'Empty'
-                    neuron = EmptyNeuron;
+                    neuron = EmptyNeuron();
                 case 'Lin'
-                    neuron = LinearNeuron;
+                    neuron = LinearNeuron();
                 case 'Tansig'
-                    neuron = SigmoidalNeuron;
+                    neuron = SigmoidalNeuron();
                 case 'Fuzzy'
                     neuron = FFNeuron(obj.FFNeuronOptions{FFoptionIndex}{:});
             end
@@ -405,5 +407,17 @@ classdef FeedForwardNetwork
     end
     %% Private methods end
     
+    methods(Access = protected)
+        function cp = copyElement(obj)
+            cp = copyElement@matlab.mixin.Copyable(obj);
+            for i=1:size(obj.hiddenLayer,2)
+                for j=1:size(obj.hiddenLayer{i},2)
+                    cp.hiddenLayer{i}(j) = obj.hiddenLayer{i}(j).copy();
+                end
+            end
+            
+            cp.outputLayer = obj.outputLayer.copy();
+        end
+    end
 end
 
