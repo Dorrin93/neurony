@@ -61,7 +61,7 @@ classdef FFNeuron < BaseNeuron
             obj.fundamentalEQ = types(type);
         end;
         
-        function obj = activation_function(obj,X)
+        function response = activation_function(obj,X)
 
             response = obj.fundamentalEQ(X,obj.Q);
             if obj.constQ == false
