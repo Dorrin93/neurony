@@ -1,6 +1,6 @@
 classdef FeedForwardNetwork < matlab.mixin.Copyable
     %FeedForwardNetwork
-  
+    
     properties
         inputLayer;
         hiddenLayer;
@@ -90,7 +90,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                 obj.outputLayer(j).activation_function_parameters=[1,0];
                 
             end
-            obj.init = true;            
+            obj.init = true;
             
         end
         
@@ -112,7 +112,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
         end
         
         function response = sim(obj,X)
-            response = calculate_output(obj, X); 
+            response = calculate_output(obj, X);
         end
         
         function net = train_LM( net,Xu,Yu,max_error,max_epochs,max_mu )
@@ -121,9 +121,11 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
             %Xu - learning inputs
             %Yu - learning outputs
             mu=0.1;
-            old_err=999999;
+            old_err=0;
             m=1;
-            
+            for it=1: size(Xu,1)
+                old_err=old_err+(Yu(it,:)-net.calculate_output(Xu(it,:)))^2;
+            end
             
             for i=1:max_epochs
                 net2=copyElement(net);
@@ -160,8 +162,9 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
             end
         end
         
-        function net = train_BMAM( net,Xu,Yu,max_error,mu )
+        function net = train_BMAM( net,Xu,Yu,max_error,max_epoch )
             %%Function for training network with BMAM
+            mu=1;
             old_err=0;
             for it=1: size(Xu,1)
                 old_err=old_err+(Yu(it,:)-net.calculate_output(Xu(it,:)))^2;
@@ -169,31 +172,73 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
             rp=randperm(size(Xu,1));
             Xu=Xu(rp,:);
             Yu=Yu(rp,:);
-            for i=1:size(net.hiddenLayer,2)
-                for j=1:size(net.hiddenLayer{i},2)
-                    for weight=1:size(net.hiddenLayer{i}(j).weights,2)+1
-                        
-                        new_err=[];
-                        lowest_err=0;
-                        for copy=1:6 %% tutaj zrownoleglenie
-                            net_copies(copy)=copyElement(net);
-                            if copy<6 %% numer 6 pozostaje bez zmian
+            for epoch=1:max_epoch
+                for i=1:size(net.hiddenLayer,2)
+                    for j=1:size(net.hiddenLayer{i},2)
+                        for weight=1:size(net.hiddenLayer{i}(j).weights,2)+1
+                            
+                            new_err=[];
+                            lowest_err=0;                  
+                            
+                            for copy=1:6 %% tutaj zrownoleglenie
+                                net_copies(copy)=copyElement(net);
+                                if copy<6 %% numer 6 pozostaje bez zmian
+                                    
+                                    if(weight==size(net.hiddenLayer{i}(j).weights,2)+1)
+                                        net_copies(copy).hiddenLayer{i}(j).bias=net_copies(copy).hiddenLayer{i}(j).bias+(.5-rand());
+                                    else
+                                        net_copies(copy).hiddenLayer{i}(j).weights(weight)=net_copies(copy).hiddenLayer{i}(j).weights(weight)+(.5-rand());
+                                    end
+                                end
+                                for iter=1:5
+                                    net_copies(copy)=train_LM(net_copies(copy),Xu,Yu,1e-4,5,1e9);
+                                end
+                                new_err(copy)=0;
+                                for it=1: size(Xu,1)
+                                    new_err(copy)=new_err(copy)+(Yu(it,:)-net_copies(copy).calculate_output(Xu(it,:)))^2;
+                                end
+                            end
+                            
+                            [min_err,min_err_index]=min(new_err);
+                            %%aktualizacja jesli blad sie zmniejszyl
+                            if(old_err-min_err>0.00001)
+                                net=copyElement(net_copies(min_err_index));
+                                old_err=new_err(min_err_index);
+                                %mu=mu/10;
                                 
-                                if(weight==size(net.hiddenLayer{i}(j).weights,2)+1)
-                                    net_copies(copy).hiddenLayer{i}(j).bias=net_copies(copy).hiddenLayer{i}(j).bias+(.5-rand());
+                            else                                
+                                mu=mu*10;
+                            end
+                            old_err
+                            
+                            if(old_err<max_error)
+                                break
+                            end
+                        end
+                        
+                        j
+                    end
+                    i
+                end
+                for j=1:size(net.outputLayer,2)
+                    for weight=1:size(net.outputLayer(j).weights,2)+1
+                        for copy=1:6 %% tu tez zrownolglic mozna
+                            net_copies(copy)=copyElement(net);
+                            if copy<6 %%numer szesc bez zmian
+                                if(weight==size(net.outputLayer(j).weights,2)+1)
+                                    net_copies(copy).outputLayer(j).bias=net_copies(copy).outputLayer(j).bias+(.5-rand());
                                 else
-                                    net_copies(copy).hiddenLayer{i}(j).weights(weight)=net_copies(copy).hiddenLayer{i}(j).weights(weight)+(.5-rand());
+                                    net_copies(copy).outputLayer(j).weights(weight)=net_copies(copy).outputLayer(j).weights(weight)+(.5-rand());
                                 end
                             end
                             for iter=1:3
-                                net_copies(copy)=LM_iteration(net_copies(copy),Xu,Yu,mu);
+                                net_copies(copy)=train_LM(net_copies(copy),Xu,Yu,1e-4,5,1e9);
                             end
                             new_err(copy)=0;
                             for it=1: size(Xu,1)
                                 new_err(copy)=new_err(copy)+(Yu(it,:)-net_copies(copy).calculate_output(Xu(it,:)))^2;
                             end
                         end
-                        
                         [min_err,min_err_index]=min(new_err);
                         %%aktualizacja jesli blad sie zmniejszyl
                         if(old_err-min_err>0.00001)
@@ -205,57 +250,34 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                             
                             mu=mu*10;
                         end
+                        
                         old_err
                         
                         if(old_err<max_error)
                             break
                         end
                     end
-                    
                     j
                 end
-                i
-            end
-            for j=1:size(net.outputLayer,2)
-                for weight=1:size(net.outputLayer(j).weights,2)+1
-                    for copy=1:6 %% tu tez zrownolglic mozna
-                        net_copies(copy)=copyElement(net);
-                        if copy<6 %%numer szesc bez zmian
-                            if(weight==size(net.outputLayer(j).weights,2)+1)
-                                net_copies(copy).outputLayer(j).bias=net_copies(copy).outputLayer(j).bias+(.5-rand());
-                            else
-                                net_copies(copy).outputLayer(j).weights(weight)=net_copies(copy).outputLayer(j).weights(weight)+(.5-rand());
-                            end
-                        end
-                        for iter=1:3
-                            net_copies(copy)=LM_iteration(net_copies(copy),Xu,Yu,mu);
-                        end
-                        new_err(copy)=0;
-                        for it=1: size(Xu,1)
-                            new_err(copy)=new_err(copy)+(Yu(it,:)-net_copies(copy).calculate_output(Xu(it,:)))^2;
-                        end
-                    end
-                    [min_err,min_err_index]=min(new_err);
-                    %%aktualizacja jesli blad sie zmniejszyl
-                    if(old_err-min_err>0.00001)
-                        net=copyElement(net_copies(min_err_index));
-                        old_err=new_err(min_err_index);
-                        mu=mu/10;
-                        
-                    else
-                        
-                        mu=mu*10;
-                    end
-                    
-                    old_err
-                    
-                    if(old_err<max_error)
-                        break
-                    end
+                if old_err<max_error
+                    break
                 end
-                j
             end
-            
+        end
+        
+        function obj = setConstQ(obj, layer, state)
+            if ~strcmp('Fuzzy', obj.transferfcns{layer})
+                error('Layer doesnt contain fuzzy neurons');
+            end
+            if layer > size(obj.hiddenLayer, 2)
+                for i = 1:size(obj.outputLayer,2)
+                    obj.outputLayer(i).constQ = state;
+                end
+            else
+                for i = 1:size(obj.hiddenLayer{layer},2)
+                    obj.hiddenLayer{layer}(i).constQ = state;
+                end
+            end
         end
         
     end
@@ -390,8 +412,8 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                 weight_num=weight_num+1;
             end
         end
-
-
+        
+        
         function neuron = getNeuron(obj, layerIndex, FFoptionIndex)
             switch obj.transferfcns{layerIndex}
                 case 'Empty'
@@ -403,7 +425,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                 case 'Fuzzy'
                     neuron = FFNeuron(obj.FFNeuronOptions{FFoptionIndex}{:});
             end
-        end 
+        end
     end
     %% Private methods end
     
