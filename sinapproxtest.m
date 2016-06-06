@@ -48,7 +48,7 @@ for opt={%{'ChoiD', 'Frank', 100, 0.55, 0.55}, ...
 display(opt{1});
 N_neu = [];
 E_neu = [];
-for i=2:2
+for i=2:12
     %display(i);
     fprintf('%g neurons\n', i);
     net = FeedForwardNetwork( [i ],'Fuzzy','Lin');
