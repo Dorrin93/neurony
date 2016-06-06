@@ -29,7 +29,7 @@ end
 X_u = X_u';
 T_u = T_u';
 
-opt={{'ChoiD', 'Frank', 100, 0.55, 0.55}, ...
+opt={%{'ChoiD', 'Frank', 100, 0.55, 0.55}, ...
          {'ChoiD', 'Algebraic', 2, 0.09, 0.09},...
          {'ChoiD', 'Yager', 2, 0.17, 0.17},...
          {'ChoiD', 'Dombi', 2, 0.06, 0.06},...
@@ -46,19 +46,19 @@ opt={{'ChoiD', 'Frank', 100, 0.55, 0.55}, ...
          {'JK', 'Hamacher', 10, 0.32, 0.32}
         };
 
-for k=1:size(opt,2)
-current_opt = opt(k);
-display(current_opt{1});
+for k=opt
+display(k{1});
 N_neu = [];
 E_neu = [];
 for i=2:12
     %display(i);
+    fprintf('%g neurons\n', i);
     net = FeedForwardNetwork( [i ],'Fuzzy','Lin');
-    net.FFNeuronOptions{1} = current_opt{1};
+    net.FFNeuronOptions{1} = k{1};
     %net.FFNeuronOptions{2} = {'ChoiD', 'Frank', 100, 0.55, 0.55};
     net = configure(net, X_u, T_u);
     %net = train_BMAM(net, X_u, T_u, 1e-4, 1e9);
-    net = train_LM(net, X_u, T_u, 1e-6, 1000, 1e9);
+    net = train_LM(net, X_u, T_u, 1e-4, 1000, 1e9);
     error = 0;
     T_n = zeros(1,n);
     for j = 1:n
