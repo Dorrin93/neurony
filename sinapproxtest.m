@@ -29,12 +29,12 @@ end
 X_u = X_u';
 T_u = T_u';
 
- for opt={...
+for opt={...
          {'ChoiD', 'Frank', 100, 0.55, 0.55}, ...
          {'ChoiD', 'Algebraic', 2, 0.09, 0.09},...
          {'ChoiD', 'Yager', 2, 0.17, 0.17},...
          {'ChoiD', 'Dombi', 2, 0.06, 0.06},...
-         {'ChoiD', 'Hamacher', 10, 0.38, 0.38}%,...
+         {'ChoiD', 'Hamacher', 10, 0.38, 0.38},...
          {'D', 'Frank', 100, 0.45, 0.45}, ...
          {'D', 'Algebraic', 2, 0.15, 0.15},...
          {'D', 'Yager', 2, 0.20, 0.20},...
@@ -49,14 +49,14 @@ T_u = T_u';
 display(opt{1});
 N_neu = [];
 E_neu = [];
-for i=4:4
+for i=2:12
     %display(i);
     fprintf('%g neurons\n', i);
     net = FeedForwardNetwork( [i ],'Fuzzy','Lin');
     net.FFNeuronOptions{1} = opt{1};
     net = configure(net, X_u, T_u);
-    %net = train_BMAM(net, X_u, T_u, 1e-4, 1e9);
-    net = train_LM(net, X_u, T_u, 1e-4, 50, 1e9);
+    net = train_BMAM(net, X_u, T_u, 1e-4, 1);
+    %net = train_LM(net, X_u, T_u, 1e-4, 50, 1e9);
     %net = setConstQ(net, 1, false);
     error = 0;
     T_n = zeros(1,n);
@@ -76,9 +76,9 @@ for i=4:4
     E_neu = [E_neu error/n];
     subplot(2,1,2);
     plot(N_neu, E_neu, '.-b');
-    print(fig, strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_', int2str(i), '_lm'),'-dpng');
+    print(fig, strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_', int2str(i), '_bmam'),'-dpng');
     close(fig);
 end
-dlmwrite(strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_lm_errors.txt'), E_neu);
+dlmwrite(strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_bmam_errors.txt'), E_neu);
 
 end

@@ -151,8 +151,8 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                     mu=mu*10;
                 end
                 
-                old_err
-                i
+                fprintf('previous trainlm error: %s\n', old_err);
+                fprintf('trainlm epoch: %g\n', i);
                 if(old_err<max_error)
                     break
                 end
@@ -173,6 +173,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
             Xu=Xu(rp,:);
             Yu=Yu(rp,:);
             for epoch=1:max_epoch
+                fprintf('bmam epoch %g\n', epoch);
                 for i=1:size(net.hiddenLayer,2)
                     for j=1:size(net.hiddenLayer{i},2)
                         for weight=1:size(net.hiddenLayer{i}(j).weights,2)+1
@@ -209,16 +210,18 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                             else                                
                                 mu=mu*10;
                             end
-                            old_err
+                            display(' ');
+                            fprintf('previous bmam hidden error: %s\n', old_err);
                             
                             if(old_err<max_error)
                                 break
                             end
                         end
                         
-                        j
+                        fprintf('hidden layer neuron %g\n', j);
                     end
-                    i
+                    fprintf('hidden layer %g\n', i);
+                    display(' ');
                 end
                 for j=1:size(net.outputLayer,2)
                     for weight=1:size(net.outputLayer(j).weights,2)+1
@@ -250,14 +253,15 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                             
                             mu=mu*10;
                         end
-                        
-                        old_err
+                        display(' ');
+                        fprintf('previous bmam output error: %s\n', old_err);
                         
                         if(old_err<max_error)
                             break
                         end
                     end
-                    j
+                    fprintf('output layer neuron %g\n', j);
+                    display(' ');
                 end
                 if old_err<max_error
                     break
