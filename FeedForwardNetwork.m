@@ -197,7 +197,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                         [min_err,min_err_index]=min(new_err);
                         %%aktualizacja jesli blad sie zmniejszyl
                         if(old_err-min_err>0.00001)
-                            net=net_copies(min_err_index);
+                            net=copyElement(net_copies(min_err_index));
                             old_err=new_err(min_err_index);
                             mu=mu/10;
                             
@@ -219,7 +219,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
             for j=1:size(net.outputLayer,2)
                 for weight=1:size(net.outputLayer(j).weights,2)+1
                     for copy=1:6 %% tu tez zrownolglic mozna
-                        net_copies(copy)=copy(net);
+                        net_copies(copy)=copyElement(net);
                         if copy<6 %%numer szesc bez zmian
                             if(weight==size(net.outputLayer(j).weights,2)+1)
                                 net_copies(copy).outputLayer(j).bias=net_copies(copy).outputLayer(j).bias+(.5-rand());
@@ -238,7 +238,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                     [min_err,min_err_index]=min(new_err);
                     %%aktualizacja jesli blad sie zmniejszyl
                     if(old_err-min_err>0.00001)
-                        net=net_copies(min_err_index);
+                        net=copyElement(net_copies(min_err_index));
                         old_err=new_err(min_err_index);
                         mu=mu/10;
                         
