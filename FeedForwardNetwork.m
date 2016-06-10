@@ -13,8 +13,8 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
     
     properties(Access = private)
         init;
-        %pn; ps;
-        %tn; ts;
+        ps;
+        ts;
         hiddenLayerSize;
     end
     
@@ -54,8 +54,8 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
             is = size(X, 2);
             os = size(Y, 2);
             hs = size(obj.transferfcns,2)-1;
-            %[obj.pn, obj.ps] = mapminmax(X);
-            %[obj.tn, obj.ts] = mapminmax(Y);
+            [~, obj.ps] = mapminmax(X', 0, 1);
+            [~, obj.ts] = mapminmax(Y', 0, 1);
             
             obj.inputLayer=is;
             obj.hiddenLayer=cell(1,hs);
@@ -112,7 +112,15 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
         end
         
         function response = sim(obj,X)
-            response = calculate_output(obj, X);
+            pnewn = mapminmax('apply', X, obj.ps);
+            out = calculate_output(obj, pnewn);
+            response = mapminmax('reverse', out, obj.ts);
+        end
+        
+        function net = trainlm( net,Xu,Yu,max_error,max_epochs,max_mu )
+            [pn, net.ps] = mapminmax(Xu', 0, 1);
+            [tn, net.ts] = mapminmax(Yu', 0, 1);
+            net = train_LM(net,pn',tn',max_error,max_epochs,max_mu);
         end
         
         function net = train_LM( net,Xu,Yu,max_error,max_epochs,max_mu )
@@ -162,7 +170,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
             end
         end
         
-        function net = train_BMAM( net,Xu,Yu,max_error,max_epoch )
+        function net = train_BMAM( net,Xu,Yu,max_error,max_epoch, lm_epochs )
             %%Function for training network with BMAM
             mu=1;
             old_err=0;
@@ -191,9 +199,9 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                                         net_copies(copy).hiddenLayer{i}(j).weights(weight)=net_copies(copy).hiddenLayer{i}(j).weights(weight)+(.5-rand());
                                     end
                                 end
-                                for iter=1:5
-                                    net_copies(copy)=train_LM(net_copies(copy),Xu,Yu,1e-4,5,1e9);
-                                end
+                                
+                                net_copies(copy)=train_LM(net_copies(copy),Xu,Yu,1e-4,lm_epochs,1e9);
+                                
                                 new_err(copy)=0;
                                 for it=1: size(Xu,1)
                                     new_err(copy)=new_err(copy)+(Yu(it,:)-net_copies(copy).calculate_output(Xu(it,:)))^2;
@@ -234,9 +242,9 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                                     net_copies(copy).outputLayer(j).weights(weight)=net_copies(copy).outputLayer(j).weights(weight)+(.5-rand());
                                 end
                             end
-                            for iter=1:3
-                                net_copies(copy)=train_LM(net_copies(copy),Xu,Yu,1e-4,5,1e9);
-                            end
+                            
+                                net_copies(copy)=train_LM(net_copies(copy),Xu,Yu,1e-4,lm_epochs,1e9);
+                            
                             new_err(copy)=0;
                             for it=1: size(Xu,1)
                                 new_err(copy)=new_err(copy)+(Yu(it,:)-net_copies(copy).calculate_output(Xu(it,:)))^2;
