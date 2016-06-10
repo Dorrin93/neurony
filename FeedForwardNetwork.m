@@ -112,17 +112,28 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
         end
         
         function response = sim(obj,X)
-            pnewn = mapminmax('apply', X, obj.ps);
-            out = calculate_output(obj, pnewn);
-            response = mapminmax('reverse', out, obj.ts);
+            pnewn = mapminmax('apply', X', obj.ps);
+            out = calculate_output(obj, pnewn');
+            response = mapminmax('reverse', out', obj.ts)';
         end
         
-        function net = trainlm( net,Xu,Yu,max_error,max_epochs,max_mu )
+        function net = trainlm(net,Xu,Yu,max_error,max_epochs,max_mu)
             [pn, net.ps] = mapminmax(Xu', 0, 1);
             [tn, net.ts] = mapminmax(Yu', 0, 1);
             net = train_LM(net,pn',tn',max_error,max_epochs,max_mu);
         end
         
+        function net = trainbmam(net,Xu,Yu,max_error,max_epoch, lm_epochs) 
+           [pn, net.ps] = mapminmax(Xu', 0, 1);
+           [tn, net.ts] = mapminmax(Yu', 0, 1);
+           net = train_BMAM(net,pn',tn',max_error,max_epoch, lm_epochs);
+        end
+        
+    end
+    %% Public methods end
+    
+    %% Privare methods
+    methods(Access = private)
         function net = train_LM( net,Xu,Yu,max_error,max_epochs,max_mu )
             %Function for training network with Levenberg-Marquardt Backpropagation
             %Algorithm
@@ -291,12 +302,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                 end
             end
         end
-        
-    end
-    %% Public methods end
-    
-    %% Privare methods
-    methods(Access = private)
+
         
         function [net_response,y,delta] = calculate_output_and_LMparameters(obj,X)
             dx=0.00001;
