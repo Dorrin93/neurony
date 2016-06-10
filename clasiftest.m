@@ -188,9 +188,10 @@ end
             };
 
         display(opt{1});
-        errors_t = zeros(1,10);
-        clasif_t = zeros(1,10);
-        for z=1:10
+        samples = 3;
+        errors_t = zeros(1,samples);
+        clasif_t = zeros(1,samples);
+        for z=1:samples
             display(z);
             net = FeedForwardNetwork(neurons,'Fuzzy','Fuzzy');
             net.FFNeuronOptions{1} = opt{1};
@@ -215,7 +216,8 @@ end
         end
 
         dlmwrite(strcat('clasif/', opt{1}{1}, '_', opt{1}{2}, '_', ...
-            int2str(neurons), '_', sets{ds}, '.txt'), [mean(err), std(err); mean(clas), std(clas)]);
+            int2str(neurons), '_', sets{ds}, '.txt'), [mean(errors_t),...
+            std(errors_t); mean(clasif_t), std(clasif_t)]);
     end
 
 end
