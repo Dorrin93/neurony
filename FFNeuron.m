@@ -70,11 +70,15 @@ classdef FFNeuron < BaseNeuron
         end;
         
         function response = activation_function(obj,X)
+            in = logsig(X);
+            out = obj.fundamentalEQ(in,obj.Q);
             
-            response = obj.fundamentalEQ(X,obj.Q);
             if obj.constQ == false
-                obj.Q = response;
-            end;
+                obj.Q = out;
+            end
+            
+            response = out;
+            
         end
         
         function cp = copy(obj)

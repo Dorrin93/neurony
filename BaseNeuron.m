@@ -12,7 +12,7 @@ classdef BaseNeuron < handle
         function obj = BaseNeuron()
             % EMPTY and should stay that way
             obj@handle();
-            obj.bias=1;
+            obj.bias=rand();
         end
         function obj=set.weights(obj,input_weights)
             obj.weights=input_weights;          

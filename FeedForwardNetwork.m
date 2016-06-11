@@ -92,24 +92,7 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
             end
             obj.init = true;
             
-        end
-        
-        function net_response = calculate_output(obj,X)
-            %%HiddenLayers
-            input=X;
-            for i=1:size(obj.hiddenLayer,2)
-                hiddenLayerOutput=zeros(1,size(obj.hiddenLayer{i},2));
-                for j=1:size(obj.hiddenLayer{i},2)
-                    hiddenLayerOutput(j)=obj.hiddenLayer{i}(j).calculate_output(input);
-                end
-                input=hiddenLayerOutput;
-            end
-            %%OutputLayer
-            net_response=zeros(1,size(obj.outputLayer,2));
-            for i=1:size(obj.outputLayer,2)
-                net_response(i)=obj.outputLayer(i).calculate_output(hiddenLayerOutput);
-            end
-        end
+        end        
         
         function response = sim(obj,X)
             pnewn = mapminmax('apply', X', obj.ps);
@@ -129,11 +112,44 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
            net = train_BMAM(net,pn',tn',max_error,max_epoch, lm_epochs);
         end
         
+        function obj = setConstQ(obj, layer, state)
+            if ~strcmp('Fuzzy', obj.transferfcns{layer})
+                error('Layer doesnt contain fuzzy neurons');
+            end
+            if layer > size(obj.hiddenLayer, 2)
+                for i = 1:size(obj.outputLayer,2)
+                    obj.outputLayer(i).constQ = state;
+                end
+            else
+                for i = 1:size(obj.hiddenLayer{layer},2)
+                    obj.hiddenLayer{layer}(i).constQ = state;
+                end
+            end
+        end
+        
     end
     %% Public methods end
     
     %% Privare methods
     methods(Access = private)
+       function net_response = calculate_output(obj,X)
+            %%HiddenLayers
+            input=X;
+            for i=1:size(obj.hiddenLayer,2)
+                hiddenLayerOutput=zeros(1,size(obj.hiddenLayer{i},2));
+                for j=1:size(obj.hiddenLayer{i},2)
+                    hiddenLayerOutput(j)=obj.hiddenLayer{i}(j).calculate_output(input);
+                end
+                input=hiddenLayerOutput;
+            end
+            %%OutputLayer
+            net_response=zeros(1,size(obj.outputLayer,2));
+            for i=1:size(obj.outputLayer,2)
+                net_response(i)=obj.outputLayer(i).calculate_output(hiddenLayerOutput);
+            end
+        end
+        
+        
         function net = train_LM( net,Xu,Yu,max_error,max_epochs,max_mu )
             %Function for training network with Levenberg-Marquardt Backpropagation
             %Algorithm
@@ -287,22 +303,6 @@ classdef FeedForwardNetwork < matlab.mixin.Copyable
                 end
             end
         end
-        
-        function obj = setConstQ(obj, layer, state)
-            if ~strcmp('Fuzzy', obj.transferfcns{layer})
-                error('Layer doesnt contain fuzzy neurons');
-            end
-            if layer > size(obj.hiddenLayer, 2)
-                for i = 1:size(obj.outputLayer,2)
-                    obj.outputLayer(i).constQ = state;
-                end
-            else
-                for i = 1:size(obj.hiddenLayer{layer},2)
-                    obj.hiddenLayer{layer}(i).constQ = state;
-                end
-            end
-        end
-
         
         function [net_response,y,delta] = calculate_output_and_LMparameters(obj,X)
             dx=0.00001;

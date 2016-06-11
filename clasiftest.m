@@ -197,26 +197,27 @@ end
             net.FFNeuronOptions{1} = opt{1};
             net.FFNeuronOptions{2} = opt{1};
             net = configure(net, X_t', I');
-            net = trainlm(net, X_t', I', 1e-4, 250, 1e9);
+            net = trainbmam(net, X_t', I', 1e-4, 1, 5);
+%             net = trainlm(net, X_t', I', 1e-4, 200, 1e9);
 
             err = 0;
             clas = 0;
             for j=1:testSize
                 res = sim(net, X_s(:,j)');
                 err = err + (res-I_s(j))^2;
-                if abs(res - I_s(j)) > 0.1
+                if abs(res - I_s(j)) > 0.2
                     clas = clas + 1;
                 end
             end
             err = err / double(testSize);
             clas = clas / double(testSize);
             errors_t(z) = err;
-            clasif_t(z) = err;
+            clasif_t(z) = clas;
             display([err clas]);
         end
 
         dlmwrite(strcat('clasif/', opt{1}{1}, '_', opt{1}{2}, '_', ...
-            int2str(neurons), '_', sets{ds}, '.txt'), [mean(errors_t),...
+            int2str(neurons), '_', sets{ds}, '_bmam.txt'), [mean(errors_t),...
             std(errors_t); mean(clasif_t), std(clasif_t)]);
     end
 
