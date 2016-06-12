@@ -49,15 +49,18 @@ for opt={...
 display(opt{1});
 N_neu = [];
 E_neu = [];
-for i=2:12
+for i=4:4:8
     %display(i);
     fprintf('%g neurons\n', i);
-    net = FeedForwardNetwork( [i ],'Fuzzy','Lin');
+    net = FeedForwardNetwork( [i],'Fuzzy','Empty');
     net.FFNeuronOptions{1} = opt{1};
+    %net.FFNeuronOptions{2} = opt{1};
     net = configure(net, X_u, T_u);
-    net = train_BMAM(net, X_u, T_u, 1e-4, 1);
-    %net = train_LM(net, X_u, T_u, 1e-4, 50, 1e9);
-    %net = setConstQ(net, 1, false);
+    net = setConstQ(net, 1, false);
+    display(net);
+    net = trainbmam(net, X_u, T_u, 1e-4, 2, 5);
+%     net = trainlm(net, X_u, T_u, 1e-4, 300, 1e9);
+%     net = setConstQ(net, 1, false);
     error = 0;
     T_n = zeros(1,n);
     for j = 1:n
@@ -65,20 +68,40 @@ for i=2:12
         error = error + (T_t(j) - val)^2;
         T_n(j) = val;
     end
-    hold off;    
+    hold off;
     fig = figure('visible','off');
-    subplot(2,1,1);
     plot(X_t, T_t, 'b');
     hold on;
     plot(X_t, T_n, 'r');
+    err1 = error / n;
     
-    N_neu = [N_neu i];
-    E_neu = [E_neu error/n];
-    subplot(2,1,2);
-    plot(N_neu, E_neu, '.-b');
-    print(fig, strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_', int2str(i), '_bmam'),'-dpng');
+    print(fig, strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_', int2str(i), '_bmam,'), '-dpng');
     close(fig);
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    
+    net = setConstQ(net, 1, false);
+    error = 0;
+    T_n = zeros(1,n);
+    for j = 1:n
+        val = sim(net,X_t(j));
+        error = error + (T_t(j) - val)^2;
+        T_n(j) = val;
+    end
+    hold off;
+    fig = figure('visible','off');
+    plot(X_t, T_t, 'b');
+    hold on;
+    plot(X_t, T_n, 'r');
+    err2 = error / n;
+    
+    print(fig, strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_', int2str(i), '_bmam_Q,'), '-dpng');
+    close(fig);
+    
+    E_neu = [E_neu [err1;err2]];
+%     E_neu = [E_neu err1];
 end
-dlmwrite(strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_bmam_errors.txt'), E_neu);
+dlmwrite(strcat('plots/', opt{1}{1}, '_', opt{1}{2}, '_bmam_errors_Q.txt'), E_neu);
+% dlmwrite('plots/tansig_lm_double_errors.txt', E_neu);
 
 end
